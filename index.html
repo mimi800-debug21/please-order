@@ -134,6 +134,15 @@
       <h1>Admin</h1>
       <div class="grid grid-2">
         <div class="panel">
+          <h2>Eingehende Bestellungen (letzte 48 Stunden)</h2>
+          <div class="actions" style="margin-bottom:8px">
+            <button class="warn" id="clear-done-btn" type="button">Erledigte entfernen</button>
+            <button class="danger" id="clear-orders-btn" type="button">Alle Bestellungen löschen</button>
+          </div>
+          <div id="order-list" class="list"></div>
+          <div class="hint">Admin aktualisiert Bestellungen automatisch (Polling). Bestellungen werden remote in JSONBin gespeichert.</div>
+        </div>
+        <div class="panel">
           <h2>Gerichte verwalten</h2>
           <form id="dish-form">
             <label for="dish-name">Gericht</label>
@@ -166,15 +175,6 @@
 
           <div id="dish-list" class="list" style="margin-top:10px"></div>
         </div>
-        <div class="panel">
-          <h2>Eingehende Bestellungen (letzte 48 Stunden)</h2>
-          <div class="actions" style="margin-bottom:8px">
-            <button class="warn" id="clear-done-btn" type="button">Erledigte entfernen</button>
-            <button class="danger" id="clear-orders-btn" type="button">Alle Bestellungen löschen</button>
-          </div>
-          <div id="order-list" class="list"></div>
-          <div class="hint">Admin aktualisiert Bestellungen automatisch (Polling). Bestellungen werden remote in JSONBin gespeichert.</div>
-        </div>
       </div>
     </section>
 
@@ -190,7 +190,6 @@
     const JSONBIN_KEY = "$2a$10$N/2gxnECUzbO8QCffVQ7Ye6N5Oare5DGjQCPaTkkcovABoafVICSS";
     const JSONBIN_DISHES_ID = "68a5d4feae596e708fcf10d3";
     const JSONBIN_ORDERS_ID = "68a5e44a43b1c97be9236b9e";
-    const ADMIN_PASSWORD = "admin123";
     const POLL_INTERVAL_MS = 5000;
     // ------------------------------------------------
 
@@ -582,9 +581,7 @@
     function onHashChange(){
       const path = location.hash.replace("#","") || "/client";
       if(path === "/admin" || path === "admin") {
-        // require pw
-        const pw = prompt("Admin-Passwort eingeben:");
-        if(pw === ADMIN_PASSWORD) showAdmin(); else { alert("Zugriff verweigert."); location.replace("#/client"); }
+        showAdmin();
       } else showClient();
     }
     function showClient(){ $("#view-client").hidden = false; $("#view-admin").hidden = true; $("#link-client").classList.add("active"); }
