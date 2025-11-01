@@ -363,41 +363,29 @@
       
       // Check if we're in update mode (button text is "Gericht aktualisieren")
       const submitButton = e.target.querySelector("button[type='submit']");
-      if(submitButton.textContent === "Gericht aktualisieren") {
-        // Find the dish being edited by looking at form values
-        // We'll assume that when in update mode, the form is pre-filled with the dish to update
-        // We need to find the dish by matching the original values or using a reference
-        // This is tricky, so we'll use a flag or store the dish ID in the form temporarily
-        let dishUpdated = false;
-        for(let i = 0; i < arr.length; i++) {
-          if(arr[i].name === $("#dish-form").dataset.editingDishName) {
-            arr[i] = { id: arr[i].id, name, price: isFinite(price)?price:0, desc, tags };
-            dishUpdated = true;
-            break;
-          }
-        }
-        
-        // If dish was updated, reset form and restore button
-        if(dishUpdated) {
-          e.target.reset();
-          if(submitButton.dataset.originalText) {
-            submitButton.textContent = submitButton.dataset.originalText;
-            delete submitButton.dataset.originalText;
-          }
-          delete e.target.dataset.editingDishName;
+      if(submitButton.dataset.editing === "true") {
+        // Find the dish being edited by using the stored dish ID
+        const dishId = $("#dish-form").dataset.editingDishId;
+        const existingIndex = arr.findIndex(x => x.id === dishId);
+        if(existingIndex >= 0){
+          arr[existingIndex] = { id: dishId, name, price: isFinite(price)?price:0, desc, tags };
+          // Reset editing state
+          delete e.target.dataset.editingDishId;
+          delete submitButton.dataset.editing;
+          submitButton.textContent = "Gericht anlegen";
         }
       } else {
-        // Normal add mode
+        // Normal add mode - check for existing dish by name
         const existing = arr.findIndex(x => x.name.toLowerCase() === name.toLowerCase());
         if(existing >= 0){
           arr[existing] = { id: arr[existing].id || uid(), name, price: isFinite(price)?price:0, desc, tags };
         } else {
           arr.unshift({ id: uid(), name, price: isFinite(price)?price:0, desc, tags });
         }
-        e.target.reset();
       }
       
       await updateDishes(arr, true);
+      e.target.reset(); // Reset the form after successful submission
       renderDishList();
       renderClient();
     });
@@ -430,15 +418,14 @@
       $("#dish-desc").value = dish.desc || "";
       $("#dish-tags").value = dish.tags || "";
       
-      // Store the original dish name in the form dataset for identification during update
-      $("#dish-form").dataset.editingDishName = dish.name;
+      // Store the dish ID in the form dataset for identification during update
+      $("#dish-form").dataset.editingDishId = dish.id;
       
-      // Update button text to indicate it's for editing
+      // Update button text to indicate it's for editing and set editing flag
       const submitButton = $("#dish-form button[type='submit']");
       if(submitButton) {
         submitButton.textContent = "Gericht aktualisieren";
-        // Store original text to restore later
-        submitButton.dataset.originalText = "Gericht anlegen";
+        submitButton.dataset.editing = "true";
       }
     }
 
